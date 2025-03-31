@@ -1,0 +1,245 @@
+import React, { useRef, useState, useEffect } from 'react';
+import { useFrame, useLoader } from '@react-three/fiber';
+import * as THREE from 'three';
+import { Text, Html, useProgress } from '@react-three/drei';
+
+function Earth() {
+  const earthRef = useRef<THREE.Mesh>(null);
+  const satelliteRef = useRef<THREE.Group>(null);
+  const clockHandsRef = useRef<THREE.Group>(null);
+  const { progress } = useProgress();
+
+  // Estado del reloj
+  const [time, setTime] = useState({
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  // Texturas de la Tierra
+  const [colorMap, normalMap, specularMap, cloudsMap] = useLoader(THREE.TextureLoader, [
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png'
+  ]);
+  // Actualización del reloj
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setTime({
+        hours: now.getHours() % 12 + now.getMinutes() / 60,
+        minutes: now.getMinutes(),
+        seconds: now.getSeconds()
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Animaciones
+  useFrame(({ clock }) => {
+    const elapsedTime = clock.getElapsedTime();
+    
+    if (earthRef.current) {
+      earthRef.current.rotation.y = elapsedTime * 0.1;
+    }
+
+    if (satelliteRef.current) {
+      const orbitRadius = 2.5;
+      const orbitSpeed = 0.5;
+      satelliteRef.current.position.x = Math.cos(elapsedTime * orbitSpeed) * orbitRadius;
+      satelliteRef.current.position.z = Math.sin(elapsedTime * orbitSpeed) * orbitRadius;
+      satelliteRef.current.rotation.y = elapsedTime * 2;
+    }
+
+    if (clockHandsRef.current) {
+      clockHandsRef.current.rotation.z = -time.hours * (Math.PI / 6);
+      clockHandsRef.current.children[0].rotation.z = -time.minutes * (Math.PI / 30);
+      clockHandsRef.current.children[1].rotation.z = -time.seconds * (Math.PI / 30);
+    }
+  });
+
+  if (progress < 100) {
+    return (
+      <Html center>
+        <div style={{
+          background: 'rgba(0,0,0,0.8)',
+          color: '#2860d8',
+          padding: '20px',
+          borderRadius: '10px',
+          fontFamily: 'Arial',
+          fontSize: '1.2rem'
+        }}>
+          Cargando modelo terrestre... {Math.round(progress)}%
+        </div>
+      </Html>
+    );
+  }
+
+  return (
+    <group>
+      {/* Iluminación mejorada */}
+      <pointLight position={[5, 5, 5]} intensity={3} color="#ffffff" />
+      <pointLight position={[-3, -1, -2]} intensity={2} color="#ffeb99" />
+      <ambientLight intensity={4} />
+
+      {/* Tierra */}
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[1, 64, 64]} />
+        <meshPhongMaterial
+          map={colorMap}
+          normalMap={normalMap}
+          specularMap={specularMap}
+          shininess={15}
+          specular="#aaaaaa"
+        />
+      </mesh>
+
+      {/* Nubes */}
+      <mesh>
+        <sphereGeometry args={[1.02, 64, 64]} />
+        <meshPhongMaterial
+          map={cloudsMap}
+          opacity={0.25}
+          transparent
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Satélite */}
+      <group ref={satelliteRef}>
+        {/* Cuerpo principal */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.25, 0.25, 0.5]} />
+          <meshStandardMaterial
+            color="#cccccc"
+            metalness={0.9}
+            roughness={0.1}
+          />
+        </mesh>
+
+        {/* Paneles solares (ambos lados) */}
+        <mesh position={[0.45, 0, 0]}>
+          <boxGeometry args={[0.8, 0.01, 0.6]} />
+          <meshStandardMaterial color="#111111" metalness={0.7} roughness={0.5} />
+        </mesh>
+        <mesh position={[-0.45, 0, 0]}>
+          <boxGeometry args={[0.8, 0.01, 0.6]} />
+          <meshStandardMaterial color="#111111" metalness={0.7} roughness={0.5} />
+        </mesh>
+
+        {/* Reloj analógico - Versión optimizada */}
+<group position={[0, 0.15, 0.35]} rotation={[0, Math.PI/2, 0]} scale={[0.8, 0.8, 0.8]}>
+  {/* Base transparente (solo bordes) */}
+  <mesh>
+    <ringGeometry args={[0.09, 0.1, 32]} />
+    <meshStandardMaterial 
+      color="#333333" 
+      metalness={0.8} 
+      roughness={0.2}
+      transparent={true}
+      opacity={0.8}
+    />
+  </mesh>
+
+  {/* Cara del reloj (semtransparente) */}
+  <mesh position={[0, 0, 0.001]}>
+    <circleGeometry args={[0.09, 32]} />
+    <meshStandardMaterial 
+      color="#222222" 
+      transparent={true}
+      opacity={0.7}
+    />
+  </mesh>
+
+  {/* Manecillas (siempre visibles) */}
+  <group ref={clockHandsRef}>
+    <mesh position={[0, 0, 0.01]}>
+      <boxGeometry args={[0.06, 0.02, 0.01]} />
+      <meshStandardMaterial color="#ff5555" emissive="#ff0000" />
+    
+          </mesh>
+
+          {/* Marcas horarias */}
+          {[...Array(12)].map((_, i) => (
+            <mesh 
+              key={i}
+              rotation={[Math.PI/2, 0, 0]}
+              position={[
+                Math.sin(i * Math.PI/6) * 0.09,
+                0.02,
+                Math.cos(i * Math.PI/6) * 0.09
+              ]}
+            >
+              <boxGeometry args={[0.01, 0.01, 0.02]} />
+              <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.3} />
+            </mesh>
+          ))}
+
+          {/* Manecillas */}
+          <group ref={clockHandsRef} rotation={[Math.PI/2, 0, 0]}>
+            {/* Horas */}
+            <mesh position={[0, 0.03, 0]}>
+              <boxGeometry args={[0.06, 0.01, 0.02]} />
+              <meshStandardMaterial color="#ff5555" emissive="#ff0000" emissiveIntensity={0.5} />
+            </mesh>
+            
+            {/* Minutos */}
+            <mesh position={[0, 0.04, 0]}>
+              <boxGeometry args={[0.09, 0.01, 0.015]} />
+              <meshStandardMaterial color="#55ff55" emissive="#00ff00" emissiveIntensity={0.3} />
+            </mesh>
+            
+            {/* Segundos */}
+            <mesh position={[0, 0.05, 0]}>
+              <boxGeometry args={[0.12, 0.01, 0.01]} />
+              <meshStandardMaterial color="#5555ff" emissive="#0000ff" emissiveIntensity={0.7} />
+            </mesh>
+            
+            {/* Eje central */}
+            <mesh position={[0, 0.02, 0]}>
+              <sphereGeometry args={[0.01, 16, 16]} />
+              <meshStandardMaterial color="#ffffff" metalness={1} roughness={0} />
+            </mesh>
+          </group>
+        </group>
+
+        {/* Placa de identificación */}
+        <group position={[0, -0.15, 0.25]}>
+          {/* Base de la placa */}
+          <mesh>
+            <boxGeometry args={[0.45, 0.15, 0.02]} />
+            <meshStandardMaterial color="#252525" metalness={0.9} roughness={0.3} />
+          </mesh>
+          
+          {/* Texto grabado */}
+          <Text
+            position={[0, 0.02, 0.021]}
+            fontSize={0.1}
+            color="#aaaaaa"
+            anchorX="center"
+            anchorY="middle"
+            font="https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmYUtfChc-.woff"
+            outlineColor="#000000"
+            outlineWidth={0.003}
+            letterSpacing={0.02}
+          >
+            PAPILINK
+          </Text>
+          <Text
+            position={[0, -0.05, 0.021]}
+            fontSize={0.07}
+            color="#888888"
+            anchorX="center"
+            anchorY="middle"
+            font="https://fonts.gstatic.com/s/roboto/v30/KFOjCnqEu92Fr1Mu51TLBCc0CsI.woff"
+          >
+            Desarrollos Web
+          </Text>
+        </group>
+      </group>
+    </group>
+  );
+}
+
+export default Earth;

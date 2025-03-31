@@ -1,0 +1,89 @@
+import React, { useRef } from 'react';
+import { useFrame, useLoader } from '@react-three/fiber';
+import { TextureLoader, Mesh, Group, PointLight, SphereGeometry, MeshPhongMaterial } from 'three';
+
+function Earth() {
+  const earthRef = useRef<Mesh>(null);
+  const satelliteRef = useRef<Group>(null);
+  
+  const [colorMap, normalMap, specularMap, cloudsMap] = useLoader(TextureLoader, [
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png'
+  ]);
+
+  useFrame(({ clock }) => {
+    const elapsedTime = clock.getElapsedTime();
+    
+    // Rotación de la Tierra
+    if (earthRef.current) {
+      earthRef.current.rotation.y = elapsedTime * 0.1;
+    }
+
+    // Órbita del satélite
+    if (satelliteRef.current) {
+      const orbitRadius = 2.5;
+      const orbitSpeed = 0.5;
+      satelliteRef.current.position.x = Math.cos(elapsedTime * orbitSpeed) * orbitRadius;
+      satelliteRef.current.position.z = Math.sin(elapsedTime * orbitSpeed) * orbitRadius;
+      satelliteRef.current.rotation.y = elapsedTime * 2; // Rotación sobre sí mismo
+    }
+  });
+
+  return (
+    <group>
+      {/* Luces adicionales para mejorar la iluminación */}
+      <pointLight position={[2, 3, 2]} intensity={15} color="#ffffff" />
+      <ambientLight intensity={5} />
+
+      {/* Glow atmosférico */}
+      <mesh>
+        <sphereGeometry args={[1.15, 32, 32]} />
+        <meshPhongMaterial
+          color="#2860d8"
+          opacity={0.1}
+          transparent={true}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Nubes */}
+      <mesh>
+        <sphereGeometry args={[1.02, 32, 32]} />
+        <meshPhongMaterial
+          map={cloudsMap}
+          opacity={0.3}  // Reducido para mayor claridad
+          depthWrite={false}
+          transparent={true}
+        />
+      </mesh>
+      
+      {/* Tierra */}
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[1, 64, 64]} /> {/* Más segmentos para mejor detalle */}
+        <meshPhongMaterial
+          map={colorMap}
+          normalMap={normalMap}
+          specularMap={specularMap}
+          shininess={4}  // Reducido para evitar zonas oscuras
+          specular="#ffffff" // Color de brillo menos intenso
+        />
+      </mesh>
+
+      {/* Satélite */}
+      <group ref={satelliteRef}>
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.1, 0.1, 0.3]} />  // Cuerpo del satélite
+          <meshPhongMaterial color="#aaaaaa" />
+        </mesh>
+        <mesh position={[0, 0, 0.2]}>
+          <sphereGeometry args={[0.08, 16, 16]} /> // Antena
+          <meshPhongMaterial color="#cccccc" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+export default Earth;

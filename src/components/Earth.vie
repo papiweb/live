@@ -1,0 +1,60 @@
+import React, { useRef } from 'react';
+import { useFrame, useLoader } from '@react-three/fiber';
+import { TextureLoader } from 'three';
+import { Mesh } from 'three';
+
+function Earth() {
+  const earthRef = useRef<Mesh>(null);
+  
+  const [colorMap, normalMap, specularMap, cloudsMap] = useLoader(TextureLoader, [
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
+    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png'
+  ]);
+
+  useFrame(({ clock }) => {
+    if (earthRef.current) {
+      earthRef.current.rotation.y = clock.getElapsedTime() * 0.1;
+    }
+  });
+
+  return (
+    <group>
+      {/* Atmosphere glow */}
+      <mesh>
+        <sphereGeometry args={[1.15, 32, 32]} />
+        <meshPhongMaterial
+          color="#2860d8"
+          opacity={0.1}
+          transparent={true}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Clouds */}
+      <mesh>
+        <sphereGeometry args={[1.02, 32, 32]} />
+        <meshPhongMaterial
+          map={cloudsMap}
+          opacity={0.4}
+          depthWrite={false}
+          transparent={true}
+        />
+      </mesh>
+      
+      {/* Earth */}
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[1, 32, 32]} />
+        <meshPhongMaterial
+          map={colorMap}
+          normalMap={normalMap}
+          specularMap={specularMap}
+          shininess={5}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+export default Earth;
