@@ -41,7 +41,7 @@ function Earth() {
     };
 
     updateClock();
-    const timer = setInterval(updateClock, 1000);
+    const timer = setInterval(updateClock, 100);
     return () => clearInterval(timer);
   }, []);
 
