@@ -1,3 +1,6 @@
+// This file is used to configure the Bolt CLI
 {
-  "template": "bolt-vite-react-ts"
+  "template": "Papiweb-vite-react-ts",
+  "homepage": "https://papiweb.github.io/live"
 }
+<script type="module" src="/src/main.tsx"></script>

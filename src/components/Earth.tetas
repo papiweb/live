@@ -62,21 +62,15 @@ function Earth() {
     }
 
     if (clockHandsRef.current) {
-      clockHandsRef.current.rotation.z = -time.hours * (Math.PI / 6) - (time.minutes * Math.PI / 360);
-      clockHandsRef.current.children[0].rotation.z = -time.minutes * (Math.PI / 30);
-      clockHandsRef.current.children[1].rotation.z = -time.seconds * (Math.PI / 30);
+      clockHandsRef.current.children[0].rotation.z = -time.hours * (Math.PI / 6);
+      clockHandsRef.current.children[1].rotation.z = -time.minutes * (Math.PI / 30);
+      clockHandsRef.current.children[2].rotation.z = -time.seconds * (Math.PI / 30);
     }
   });
+
   if (progress !== undefined && progress < 100) {
     return (
       <Html center>
-          background: 'rgba(0,0,0,0.8)',
-          background: 'rgba(0,0,0,0.8)',
-          color: '#2860d8',
-          padding: '20px',
-          borderRadius: '10px',
-          fontFamily: 'Arial',
-          fontSize: '1.2rem'
         <div style={{
           background: 'rgba(0,0,0,0.8)',
           color: '#2860d8',
@@ -143,7 +137,7 @@ function Earth() {
           <meshStandardMaterial color="#111111" metalness={0.7} roughness={0.5} />
         </mesh>
 
-        {/* Reloj analógico */}
+        {/* Reloj analógico MEJORADO */}
         <group position={[0, 0.15, 0.3]} scale={[1.9, 1.9, 1.9]}>
           <mesh>
             <ringGeometry args={[0.08, 0.1, 32]} />
@@ -180,21 +174,79 @@ function Earth() {
           ))}
 
           <group ref={clockHandsRef}>
-            <mesh position={[0, 0, 0.01]}>
-              <boxGeometry args={[0.05, 0.02, 0.005]} />
-              <meshStandardMaterial color="#ff5555" emissive="#ff0000" emissiveIntensity={0.7} />
-            </mesh>
-            <mesh position={[0, 0, 0.015]}>
-              <boxGeometry args={[0.07, 0.015, 0.005]} />
-              <meshStandardMaterial color="#55ff55" emissive="#00ff00" emissiveIntensity={0.5} />
-            </mesh>
-            <mesh position={[0, 0, 0.02]}>
-              <boxGeometry args={[0.09, 0.01, 0.005]} />
-              <meshStandardMaterial color="#5555ff" emissive="#0000ff" emissiveIntensity={0.9} />
-            </mesh>
+            {/* Aguja de horas (roja) */}
+            <group position={[0, 0, 0.01]}>
+              <mesh rotation={[0, 0, Math.PI/2]}>
+                <cylinderGeometry args={[0.008, 0.008, 0.05, 8]} />
+                <meshStandardMaterial 
+                  color="#ff5555" 
+                  emissive="#ff0000" 
+                  emissiveIntensity={0.7}
+                  metalness={0.8}
+                  roughness={0.2}
+                />
+              </mesh>
+              <mesh position={[0, 0.025, 0]}>
+                <coneGeometry args={[0.012, 0.03, 4]} />
+                <meshStandardMaterial 
+                  color="#ff5555" 
+                  emissive="#ff0000"
+                  metalness={0.9}
+                />
+              </mesh>
+            </group>
+
+            {/* Aguja de minutos (verde) */}
+            <group position={[0, 0, 0.015]}>
+              <mesh rotation={[0, 0, Math.PI/2]}>
+                <cylinderGeometry args={[0.006, 0.006, 0.07, 8]} />
+                <meshStandardMaterial 
+                  color="#55ff55" 
+                  emissive="#00ff00"
+                  emissiveIntensity={0.5}
+                  metalness={0.8}
+                />
+              </mesh>
+              <mesh position={[0, 0.035, 0]}>
+                <coneGeometry args={[0.01, 0.025, 4]} />
+                <meshStandardMaterial 
+                  color="#55ff55" 
+                  emissive="#00ff00"
+                />
+              </mesh>
+            </group>
+
+            {/* Aguja de segundos (azul) */}
+            <group position={[0, 0, 0.02]}>
+              <mesh rotation={[0, 0, Math.PI/2]}>
+                <cylinderGeometry args={[0.004, 0.004, 0.09, 8]} />
+                <meshStandardMaterial 
+                  color="#5555ff" 
+                  emissive="#0000ff"
+                  emissiveIntensity={0.9}
+                  metalness={1.0}
+                  roughness={0.1}
+                />
+              </mesh>
+              <mesh position={[0, 0.045, 0]}>
+                <coneGeometry args={[0.008, 0.02, 4]} />
+                <meshStandardMaterial 
+                  color="#5555ff" 
+                  emissive="#0000ff"
+                />
+              </mesh>
+            </group>
+
+            {/* Eje central (mejorado) */}
             <mesh position={[0, 0, 0.005]}>
-              <sphereGeometry args={[0.008, 16, 16]} />
-              <meshStandardMaterial color="#ffffff" metalness={1} roughness={0} />
+              <sphereGeometry args={[0.01, 16, 16]} />
+              <meshStandardMaterial 
+                color="#ffffff" 
+                metalness={1} 
+                roughness={0}
+                emissive="#ffffff"
+                emissiveIntensity={0.3}
+              />
             </mesh>
           </group>
         </group>

@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/live/', // ¡papiweb!
+  base: 'papiweb.github.io/live/', // ¡papiweb!
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
@@ -13,3 +13,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 1600, // Opcional: para silenciar la advertencia de tamaño
   }
 });
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
