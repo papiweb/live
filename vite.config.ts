@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/papiweb.github.io/live/', // ¡papiweb!
+  base: '/live/', // ¡papiweb!
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
